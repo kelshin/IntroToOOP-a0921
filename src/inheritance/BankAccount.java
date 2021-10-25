@@ -1,7 +1,6 @@
 package inheritance;
 
 
-
 public class BankAccount {
     private String accountNumber;
     private double balance;
@@ -28,7 +27,7 @@ public class BankAccount {
         return accountNumber;
     }
 
-    public void setAccountNumber(String accountNumber) {
+    public final void setAccountNumber(String accountNumber) {
         this.accountNumber = accountNumber;
     }
 

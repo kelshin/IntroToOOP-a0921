@@ -2,7 +2,7 @@ package polymorphism;
 
 import java.util.Date;
 
-public class Employee {
+public abstract class Employee {
     private String employeeId;
     private long salary;
     private Date startDate;
@@ -25,7 +25,6 @@ public class Employee {
         return salary;
     }
 
-    public void work() {
-        System.out.println("Employee ID: " + employeeId + " is working...");
-    }
+    // abstract method is a method without body, it's just a declaration.
+    public abstract void work();
 }
