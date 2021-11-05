@@ -6,9 +6,13 @@ public class Driver {
         al.add("Hello");
         al.add("Hello");
         al.add("Hello");
-        System.out.println(al);
 
-        al.set(10, "Bye");
+        MyArrayList<String> toAdd = new MyArrayList<>();
+        toAdd.add("Bye");
+        toAdd.add("Bye");
+
+        al.addAll(1, toAdd);
+        System.out.println(al);
 
 
     }

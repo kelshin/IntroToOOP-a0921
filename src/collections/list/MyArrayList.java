@@ -35,50 +35,86 @@ public class MyArrayList<E> implements List<E> {
 
     @Override
     public boolean contains(Object o) {
-        return false;
-    }
-
-    @Override
-    public Iterator iterator() {
-        return null;
+        return indexOf(o) >= 0;
     }
 
     @Override
     public Object[] toArray() {
-        return new Object[0];
+        return Arrays.copyOf(elementData, size);
+    }
+
+    /**
+        Returns an array containing all of the elements in this list in proper sequence (from first to last element); the runtime type of the returned array is that of the specified array. If the list fits in the specified array, it is returned therein. Otherwise, a new array is allocated with the runtime type of the specified array and the size of this list.
+        If the list fits in the specified array with room to spare (i.e., the array has more elements than the list), the element in the array immediately following the end of the collection is set to null. (This is useful in determining the length of the list only if the caller knows that the list does not contain any null elements.)
+        Params:
+        a – the array into which the elements of the list are to be stored, if it is big enough; otherwise, a new array of the same runtime type is allocated for this purpose.
+                Returns:
+        an array containing the elements of the list
+        Throws:
+        ArrayStoreException – if the runtime type of the specified array is not a supertype of the runtime type of every element in this list
+        NullPointerException – if the specified array is null
+     */
+    @Override
+    public <T> T[] toArray(T[] a) {
+        // TODO: Exercise
+        if (a.length < size) {
+            return (T[]) Arrays.copyOf(elementData, size);
+        }
+        System.arraycopy(elementData, 0, a, 0, size);
+        if (a.length > size) {
+            a[size] = null;
+        }
+        return a;
     }
 
     @Override
-    public Object[] toArray(Object[] a) {
-        return new Object[0];
+    public Iterator<E> iterator() {
+        return null;
     }
 
+    // Increase by 50%
     @Override
-    public boolean add(E o) {
+    public boolean add(E e) {
         if (size == elementData.length) {
             elementData = grow(size + 1);
         }
-        elementData[size] = o;
+        elementData[size] = e;
         size++;
         return true;
     }
+
+    /**
+     * The Maximum size of array to allocate.
+     * Some VMs reserve some header words in an array.
+     * Attempts to allocate larger arrays "may" result in OutOfMemoryOrder
+     * : Requested array size exceeds VM limit.
+     */
+    private static final int MAX_ARRAY_SIZE = Integer.MAX_VALUE - 8;
 
     private Object[] grow(int minCapacity) {
         return elementData = Arrays.copyOf(elementData, newCapacity(minCapacity));
     }
 
-    private static final int MAX_ARRAY_SIZE = Integer.MAX_VALUE - 8;
-
+    /**
+     * Returns a capacity at least as large as the given minimum capacity.
+     * Returns the current capacity increased by 50% if that suffices.
+     * Will not return a capacity greater than MAX_ARRAY_SIZE unless
+     * the given minimum capacity is greater than MAX_ARRAY_SIZE.
+     *
+     * @param minCapacity the desired minimum capacity
+     * @throws OutOfMemoryError if minCapacity is less than zero
+     */
     private int newCapacity(int minCapacity) {
         int oldCapacity = elementData.length;
         int newCapacity = oldCapacity + (oldCapacity >> 1);
         if (newCapacity <= minCapacity) {
+            // overflow-conscious code
             if (minCapacity < 0 || minCapacity > MAX_ARRAY_SIZE) {
                 throw new OutOfMemoryError("integer overflow");
             }
             return minCapacity;
         }
-        // this can be pretty dangerous.
+        // this is pretty dangerous. (depends on VMs)
         // alternative could be using 'long' type array
         return (newCapacity <= MAX_ARRAY_SIZE) ? newCapacity : Integer.MAX_VALUE;
     }
@@ -107,47 +143,103 @@ public class MyArrayList<E> implements List<E> {
     }
 
     @Override
-    public boolean containsAll(Collection c) {
-        return false;
+    public boolean containsAll(Collection<?> c) {
+        for (Object e: c) {
+            if (!contains(e)) {
+                return false;
+            }
+        }
+        return true;
     }
 
     @Override
     public boolean addAll(Collection<? extends E> c) {
-        return false;
+        Object[] a = c.toArray();
+        int length = a.length;
+        if (length == 0) {
+            return false;
+        }
+        if (elementData.length < length + size) {
+            elementData = grow(length + size);
+        }
+        System.arraycopy(a, 0, elementData, size, length);
+        size += length;
+
+        return true;
     }
 
     @Override
     public boolean addAll(int index, Collection<? extends E> c) {
-        return false;
+        // TODO: Exercise
+        Objects.checkIndex(index, size);
+        Object[] elementsToAdd = c.toArray();
+        int length = elementsToAdd.length;
+        if (length == 0) { return false; }
+        if (elementData.length < size + length) {
+            elementData = grow(size + length);
+        }
+        int numToMove = size - index;
+        if (numToMove > 0) {
+            System.arraycopy(elementData, index, elementData, index + length, numToMove);
+        }
+        System.arraycopy(elementsToAdd, 0, elementData, index, length);
+        size += length;
+        return true;
     }
 
     @Override
-    public boolean removeAll(Collection c) {
-        return false;
+    public boolean removeAll(Collection<?> c) {
+        if (c == null) {
+            throw new NullPointerException();
+        }
+        int i;
+        for (i = size - 1; i >= 0; i--) {
+            if (c.contains(elementData[i])) {
+                break;
+            }
+            if (i == 0) {
+                return false;
+            }
+        }
+        for (; i >= 0; i--) {
+            if (c.contains(elementData[i])) {
+                fastRemove(i);
+            }
+        }
+
+        return true;
     }
 
     @Override
-    public boolean retainAll(Collection c) {
-        return false;
+    public boolean retainAll(Collection<?> c) {
+        // TODO: Exercise
+        boolean isRetained = false;
+        for (int i = 0; i < size; i++) {
+            if (!c.contains(elementData[i])) {
+                remove(elementData[i]);
+                isRetained = true;
+            }
+        }
+        return isRetained;
     }
 
     @Override
     public void clear() {
-
-    }
-
-    @Override
-    public E get(int index) {
-        checkIndex(index, size);
-        return (E) elementData[index];
-    }
-
-    private void checkIndex(int index, int size) {
-        if (index < 0 || index >= size) {
-            throw new ArrayIndexOutOfBoundsException("Index " + index + " out of bounds for length " + size);
+        for(int to = size, i = size = 0; i < to; i++) {
+            elementData[i] = null;
         }
     }
 
+    @SuppressWarnings("unchecked")
+    @Override
+    public E get(int index) {
+        if (index < 0 || index >= size) {
+            throw new ArrayIndexOutOfBoundsException("Index: " + index + ", Size: " + size);
+        }
+        return (E) elementData[index];
+    }
+
+    @SuppressWarnings("unchecked")
     @Override
     public E set(int index, E element) {
         Objects.checkIndex(index, size);
@@ -167,6 +259,7 @@ public class MyArrayList<E> implements List<E> {
         size++;
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public E remove(int index) {
         Objects.checkIndex(index, size);
@@ -184,39 +277,65 @@ public class MyArrayList<E> implements List<E> {
     }
 
     @Override
-    public String toString() {
-        StringBuilder res = new StringBuilder("[");
-        for (int i = 0; i < size - 1; i++) {
-            res.append(elementData[i] + ", ");
-        }
-        res.append(elementData[size-1] + "]");
-        return res.toString();
-    }
-
-    @Override
     public int indexOf(Object o) {
         // TODO: Exercise
-        return -1;
+        if (o == null) {
+            for (int i = 0; i < size; i++) {
+                if (elementData[i] == null) {
+                    return i;
+                }
+            }
+        } else {
+            for (int i = 0; i < size; i++) {
+                if (elementData[i].equals(o)) {
+                    return i;
+                }
+            }
+        }
+
+        return -1; // not in the array
     }
 
     @Override
     public int lastIndexOf(Object o) {
         // TODO: Exercise
-        return -1;
+        if (o == null) {
+            for (int i = size - 1; i >= 0; i--) {
+                if (elementData[i] == null) {
+                    return i;
+                }
+            }
+        } else {
+            for (int i = size - 1; i >= 0; i--) {
+                if (elementData[i].equals(o)) {
+                    return i;
+                }
+            }
+        }
+
+        return -1; // not in the array
     }
 
     @Override
-    public ListIterator listIterator() {
+    public String toString() {
+        return "MyArrayList{" +
+                "elementData=" + Arrays.toString(elementData) +
+                ", size=" + size +
+                '}';
+    }
+
+    @Override
+    public ListIterator<E> listIterator() {
         return null;
     }
 
     @Override
-    public ListIterator listIterator(int index) {
+    public ListIterator<E> listIterator(int index) {
         return null;
     }
 
     @Override
-    public List subList(int fromIndex, int toIndex) {
+    public List<E> subList(int fromIndex, int toIndex) {
         return null;
     }
 }
