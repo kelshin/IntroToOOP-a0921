@@ -1,5 +1,7 @@
 package oop.basic;
 
+import java.util.Objects;
+
 public class Car {
     // data fields (instance variables)
     String color;
