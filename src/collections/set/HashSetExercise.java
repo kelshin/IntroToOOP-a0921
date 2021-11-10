@@ -10,9 +10,16 @@ public class HashSetExercise {
         for (int y = year + 1; y <= 10234; y++) {
             String strYear = String.valueOf(y);
             HashSet<Character> set = new HashSet<>();
-            if (!set.add()) {
+            for (Character ch : strYear.toCharArray()) {
+                if (!set.add(ch)) {
+                    break;
+                }
+            }
+            if (strYear.length() == set.size()) {
+                System.out.println(strYear);
                 break;
             }
         }
+        in.close();
     }
 }
